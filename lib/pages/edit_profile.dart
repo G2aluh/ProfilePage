@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
-class EditProfilePage extends StatelessWidget {
+class EditProfilePage extends StatefulWidget {
   const EditProfilePage({super.key});
+
+  @override
+  State<EditProfilePage> createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends State<EditProfilePage> {
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,29 +35,106 @@ class EditProfilePage extends StatelessWidget {
                 ),
               ),
               // Tombol back
-              const Positioned(
+              Positioned(
                 top: 40,
                 left: 16,
-                child: Icon(Icons.arrow_back, color: Colors.white),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
               ),
-              // Tombol share
-              const Positioned(
+              // Tombol tiga titik (more options)
+              Positioned(
                 top: 40,
                 right: 16,
-                child: Icon(Icons.share, color: Colors.white),
+                child: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  onSelected: (String value) {
+                    // Handle menu item selection
+                    switch (value) {
+                      case 'Settings':
+                        // TODO: Implement Settings action
+                        break;
+                      case 'Help':
+                        // TODO: Implement Help action
+                        break;
+                      case 'Logout':
+                        // TODO: Implement Logout action
+                        break;
+                    }
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    const PopupMenuItem<String>(
+                      value: 'Settings',
+                      child: Text('Settings'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'Help',
+                      child: Text('Help'),
+                    ),
+                    const PopupMenuItem<String>(
+                      value: 'Logout',
+                      child: Text('Logout'),
+                    ),
+                  ],
+                ),
               ),
               // Avatar di tengah bawah cover
-              const Positioned(
+              Positioned(
                 top: 140,
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: avatarRadius,
-                      backgroundImage: AssetImage('assets/images/Profile.png'),
+                    MouseRegion(
+                      onEnter: (_) {
+                        setState(() {
+                          _isHovered = true;
+                        });
+                      },
+                      onExit: (_) {
+                        setState(() {
+                          _isHovered = false;
+                        });
+                      },
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4), // tebal border
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white, // White border
+                            ),
+                            child: CircleAvatar(
+                              radius: avatarRadius,
+                              backgroundColor: _isHovered ? Colors.grey.shade400 : Colors.transparent,
+                              backgroundImage:
+                                  const AssetImage('assets/images/Profile.png'),
+                            ),
+                          ),
+                          if (_isHovered)
+                            Container(
+                              width: avatarRadius * 2, // Match avatar size
+                              height: avatarRadius * 2, // Match avatar size
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.black.withOpacity(0.3),
+                              ),
+                              child: const Icon(
+                                Icons.photo,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 8),
-                    Text("Change Picture",
-                        style: TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Change Picture",
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
               ),
@@ -60,30 +144,32 @@ class EditProfilePage extends StatelessWidget {
           const SizedBox(height: avatarRadius + 16),
 
           // Konten form (statis)
-          const Padding(
-            padding: EdgeInsets.all(16),
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _StaticTextField(label: 'Name', value: 'Alexander Hamilton'),
-                _StaticTextField(label: 'Age', value: '18'),
-                _StaticTextField(
+                const _StaticInfoField(label: 'Name', value: 'Alexander Hamilton'),
+                const _StaticInfoField(label: 'Age', value: '18'),
+                const _StaticInfoField(
                     label: 'Email', value: 'alexanderhlm@gmail.com'),
-                _StaticTextField(label: 'Bio', value: 'Junior Web Developer'),
-                _StaticTextField(
+                const _StaticInfoField(label: 'Bio', value: 'Junior Web Developer'),
+                const _StaticInfoField(
                     label: 'Skill', value: 'UI Designer, Web Developer'),
-                _StaticTextField(
+                const _StaticInfoField(
                   label: 'Experience',
                   value:
                       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, '
                       'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                  maxLines: 4,
                 ),
-                _StaticTextField(
+                const _StaticInfoField(
                   label: 'About Me',
                   value:
                       'Lorem ipsum dolor sit amet, consectetur adipiscing elit, '
                       'sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+                  maxLines: 4,
                 ),
-                SizedBox(height: 24),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -94,9 +180,13 @@ class EditProfilePage extends StatelessWidget {
                         EdgeInsets.symmetric(vertical: 16),
                       ),
                     ),
-                    onPressed: null, // Tidak ada fungsi
-                    child: Text('Update',
-                        style: TextStyle(fontSize: 16, color: Colors.white)),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text(
+                      'Update',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -108,12 +198,17 @@ class EditProfilePage extends StatelessWidget {
   }
 }
 
-// Widget kecil untuk textfield statis
-class _StaticTextField extends StatelessWidget {
+// Widget kecil untuk menampilkan info statis tanpa controller
+class _StaticInfoField extends StatelessWidget {
   final String label;
   final String value;
+  final int maxLines;
 
-  const _StaticTextField({required this.label, required this.value});
+  const _StaticInfoField({
+    required this.label,
+    required this.value,
+    this.maxLines = 1,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -122,16 +217,22 @@ class _StaticTextField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
-          TextField(
-            controller: TextEditingController(text: value),
-            maxLines: (label == 'Experience' || label == 'About Me') ? 4 : 1,
-            readOnly: true,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
+          Container(
+            padding: const EdgeInsets.all(12),
+            width: double.infinity,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade400),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              value,
+              maxLines: maxLines,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
